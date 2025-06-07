@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   TestTube, Plus, Search, Filter, Edit, Trash2, Eye, Power, 
   DollarSign, Clock, Tag, CheckCircle, X, Save, Upload, Download,
-  Star, TrendingUp, Activity, BarChart3
+  Star, TrendingUp, Activity, BarChart3, Loader2, AlertCircle
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import Modal, { ConfirmModal } from '../components/Modal';
+import { testsApi, withErrorHandling } from '@/lib/api';
 
 export default function TestsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,169 +21,21 @@ export default function TestsPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [actionType, setActionType] = useState('');
   const [editingTest, setEditingTest] = useState(null);
-
-  // Mock tests data
-  const [tests, setTests] = useState([
-    {
-      id: 1,
-      name: "Complete Blood Count (CBC)",
-      category: "Blood Tests",
-      price: 299,
-      originalPrice: 499,
-      duration: "15 mins",
-      description: "Comprehensive blood analysis including RBC, WBC, platelets, and hemoglobin levels",
-      active: true,
-      popularity: 95,
-      bookings: 1234,
-      revenue: 368766,
-      lastUpdated: "2024-06-01",
-      requirements: ["No fasting required"],
-      includes: ["RBC Count", "WBC Count", "Platelet Count", "Hemoglobin", "Hematocrit"],
-      reportTime: "Same day",
-      preparationTime: "No preparation needed",
-      sampleType: "Blood",
-      testCode: "CBC001"
-    },
-    {
-      id: 2,
-      name: "Lipid Profile",
-      category: "Blood Tests",
-      price: 499,
-      originalPrice: 799,
-      duration: "20 mins",
-      description: "Cholesterol and triglyceride levels assessment for heart health monitoring",
-      active: true,
-      popularity: 87,
-      bookings: 856,
-      revenue: 427144,
-      lastUpdated: "2024-05-28",
-      requirements: ["12-hour fasting required"],
-      includes: ["Total Cholesterol", "HDL", "LDL", "Triglycerides", "VLDL"],
-      reportTime: "Same day",
-      preparationTime: "12 hours fasting",
-      sampleType: "Blood",
-      testCode: "LP001"
-    },
-    {
-      id: 3,
-      name: "Diabetes Panel",
-      category: "Blood Tests",
-      price: 599,
-      originalPrice: 899,
-      duration: "25 mins",
-      description: "HbA1c, fasting glucose, and post-meal glucose testing",
-      active: true,
-      popularity: 92,
-      bookings: 743,
-      revenue: 445057,
-      lastUpdated: "2024-06-03",
-      requirements: ["8-hour fasting required"],
-      includes: ["HbA1c", "Fasting Glucose", "Random Glucose", "Insulin Level"],
-      reportTime: "Same day",
-      preparationTime: "8 hours fasting",
-      sampleType: "Blood",
-      testCode: "DM001"
-    },
-    {
-      id: 4,
-      name: "Thyroid Function Test",
-      category: "Hormone Tests",
-      price: 699,
-      originalPrice: 999,
-      duration: "20 mins",
-      description: "TSH, T3, T4 levels to assess thyroid gland function",
-      active: true,
-      popularity: 78,
-      bookings: 567,
-      revenue: 396333,
-      lastUpdated: "2024-05-30",
-      requirements: ["No special preparation"],
-      includes: ["TSH", "T3", "T4", "Free T3", "Free T4"],
-      reportTime: "Next day",
-      preparationTime: "No preparation needed",
-      sampleType: "Blood",
-      testCode: "TFT001"
-    },
-    {
-      id: 5,
-      name: "Liver Function Test",
-      category: "Organ Tests",
-      price: 549,
-      originalPrice: 799,
-      duration: "20 mins",
-      description: "ALT, AST, bilirubin levels to evaluate liver health",
-      active: false,
-      popularity: 65,
-      bookings: 234,
-      revenue: 128466,
-      lastUpdated: "2024-05-25",
-      requirements: ["No alcohol 24hrs prior"],
-      includes: ["ALT", "AST", "Bilirubin", "ALP", "GGT"],
-      reportTime: "Same day",
-      preparationTime: "No alcohol 24hrs prior",
-      sampleType: "Blood",
-      testCode: "LFT001"
-    },
-    {
-      id: 6,
-      name: "Kidney Function Test",
-      category: "Organ Tests",
-      price: 449,
-      originalPrice: 699,
-      duration: "15 mins",
-      description: "Creatinine, BUN, and eGFR to assess kidney health",
-      active: true,
-      popularity: 71,
-      bookings: 445,
-      revenue: 199805,
-      lastUpdated: "2024-06-02",
-      requirements: ["No special preparation"],
-      includes: ["Creatinine", "BUN", "eGFR", "Uric Acid"],
-      reportTime: "Same day",
-      preparationTime: "No preparation needed",
-      sampleType: "Blood",
-      testCode: "KFT001"
-    },
-    {
-      id: 7,
-      name: "Vitamin D Test",
-      category: "Vitamin Tests",
-      price: 899,
-      originalPrice: 1299,
-      duration: "15 mins",
-      description: "25-hydroxyvitamin D levels for bone health assessment",
-      active: true,
-      popularity: 83,
-      bookings: 378,
-      revenue: 339822,
-      lastUpdated: "2024-06-01",
-      requirements: ["No fasting required"],
-      includes: ["25(OH) Vitamin D", "Vitamin D2", "Vitamin D3"],
-      reportTime: "Next day",
-      preparationTime: "No preparation needed",
-      sampleType: "Blood",
-      testCode: "VD001"
-    },
-    {
-      id: 8,
-      name: "Full Body Checkup",
-      category: "Packages",
-      price: 2999,
-      originalPrice: 4999,
-      duration: "60 mins",
-      description: "Comprehensive health screening with 75+ parameters",
-      active: true,
-      popularity: 89,
-      bookings: 289,
-      revenue: 866711,
-      lastUpdated: "2024-06-04",
-      requirements: ["12-hour fasting required"],
-      includes: ["CBC", "Lipid Profile", "LFT", "KFT", "TFT", "Diabetes Panel", "Urine Analysis", "ECG"],
-      reportTime: "Next day",
-      preparationTime: "12 hours fasting",
-      sampleType: "Blood, Urine",
-      testCode: "FBC001"
-    }
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [tests, setTests] = useState([]);
+  
+  // Categories - keeping default set as fallback
+  const [categories] = useState([
+    'Blood Tests',
+    'Hormone Tests',
+    'Organ Tests',
+    'Vitamin Tests',
+    'Cardiac Tests',
+    'Packages',
+    'Allergy Tests',
+    'Cancer Markers'
   ]);
 
   const [newTest, setNewTest] = useState({
@@ -200,23 +53,46 @@ export default function TestsPage() {
     testCode: ''
   });
 
-  // Categories
-  const categories = [
-    'Blood Tests',
-    'Hormone Tests',
-    'Organ Tests',
-    'Vitamin Tests',
-    'Cardiac Tests',
-    'Packages',
-    'Allergy Tests',
-    'Cancer Markers'
-  ];
+  // Load initial data
+  useEffect(() => {
+    loadTests();
+  }, []);
 
-  // Stats
-  const stats = [
+  // Load tests from API
+  const loadTests = async (filters = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await withErrorHandling(testsApi.getAll)(filters);
+
+      console.log("all tests",result)
+      
+      if (result.success) {
+        setTests(Array.isArray(result.data.data) ? result.data.data : []);
+      } else {
+        setError(result.error || 'Failed to load tests');
+        console.error('Failed to load tests:', result.error);
+        setTests([]); // Ensure tests is always an array
+      }
+    } catch (err) {
+      setError('Failed to load tests');
+      console.error('Error loading tests:', err);
+      setTests([]); // Ensure tests is always an array
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Safe array check function
+  const safeArray = (arr) => Array.isArray(arr) ? arr : [];
+
+  // Computed stats for display
+ // Computed stats for display
+  const displayStats = [
     {
       title: "Total Tests",
-      value: tests.length.toString(),
+      value: safeArray(tests).length.toString(),
       change: "+2",
       trend: "up",
       icon: TestTube,
@@ -225,7 +101,7 @@ export default function TestsPage() {
     },
     {
       title: "Active Tests",
-      value: tests.filter(t => t.active).length.toString(),
+      value: safeArray(tests).filter(t => t?.active).length.toString(),
       change: "+1",
       trend: "up",
       icon: CheckCircle,
@@ -234,7 +110,22 @@ export default function TestsPage() {
     },
     {
       title: "Total Revenue",
-      value: `₹${(tests.reduce((sum, test) => sum + test.revenue, 0) / 100000).toFixed(1)}L`,
+      value: (() => {
+        const totalRevenue = safeArray(tests).reduce((sum, test) => {
+          // Use the revenue field if it exists, otherwise calculate from bookings * price
+          const testRevenue = test?.revenue || ((test?.bookings || 0) * (test?.price || 0));
+          return sum + testRevenue;
+        }, 0);
+        
+        // Show in different formats based on amount
+        if (totalRevenue >= 100000) {
+          return `₹${(totalRevenue / 100000).toFixed(1)}L`; // Lakhs
+        } else if (totalRevenue >= 1000) {
+          return `₹${(totalRevenue / 1000).toFixed(1)}K`; // Thousands
+        } else {
+          return `₹${totalRevenue.toLocaleString()}`; // Regular amount
+        }
+      })(),
       change: "+15%",
       trend: "up",
       icon: DollarSign,
@@ -243,7 +134,7 @@ export default function TestsPage() {
     },
     {
       title: "Avg. Popularity",
-      value: `${Math.round(tests.reduce((sum, test) => sum + test.popularity, 0) / tests.length)}%`,
+      value: `${safeArray(tests).length > 0 ? Math.round(safeArray(tests).reduce((sum, test) => sum + (test?.popularity || 0), 0) / safeArray(tests).length) : 0}%`,
       change: "+5%",
       trend: "up",
       icon: TrendingUp,
@@ -252,10 +143,13 @@ export default function TestsPage() {
     }
   ];
 
-  const filteredTests = tests.filter(test => {
-    const matchesSearch = test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         test.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         test.testCode.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter tests
+  const filteredTests = safeArray(tests).filter(test => {
+    if (!test) return false;
+    
+    const matchesSearch = (test.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (test.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (test.testCode?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || test.category === filterCategory;
     const matchesStatus = filterStatus === 'all' || 
                          (filterStatus === 'active' && test.active) ||
@@ -263,64 +157,147 @@ export default function TestsPage() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const toggleTestStatus = (id) => {
-    setTests(tests.map(test => 
-      test.id === id ? { ...test, active: !test.active } : test
-    ));
+  // Toggle test status
+  const toggleTestStatus = async (id) => {
+    try {
+      setSubmitting(true);
+      const result = await withErrorHandling(testsApi.toggleStatus)(id);
+      
+      if (result.success) {
+        // Update local state
+        setTests(prevTests => 
+          safeArray(prevTests).map(test => 
+            test?._id === id || test?.id === id 
+              ? { ...test, active: !test.active } 
+              : test
+          )
+        );
+      } else {
+        setError(result.error || 'Failed to toggle test status');
+      }
+    } catch (err) {
+      setError('Failed to toggle test status');
+      console.error('Error toggling test status:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const deleteTest = (id) => {
-    setTests(tests.filter(test => test.id !== id));
+  // Delete test
+  const deleteTest = async (id) => {
+    try {
+      setSubmitting(true);
+      const result = await withErrorHandling(testsApi.delete)(id);
+      
+      if (result.success) {
+        setTests(prevTests => 
+          safeArray(prevTests).filter(test => 
+            test?._id !== id && test?.id !== id
+          )
+        );
+      } else {
+        setError(result.error || 'Failed to delete test');
+      }
+    } catch (err) {
+      setError('Failed to delete test');
+      console.error('Error deleting test:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const addNewTest = () => {
-    if (newTest.name && newTest.category && newTest.price && newTest.duration) {
-      const test = {
-        id: tests.length + 1,
+  // Add new test
+  const addNewTest = async () => {
+    if (!newTest.name || !newTest.category || !newTest.price || !newTest.duration) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError(null);
+      
+      const testData = {
         ...newTest,
         price: parseFloat(newTest.price),
         originalPrice: parseFloat(newTest.originalPrice || newTest.price),
-        active: true,
-        popularity: 0,
-        bookings: 0,
-        revenue: 0,
-        lastUpdated: new Date().toISOString().split('T')[0],
-        requirements: newTest.requirements.split(',').map(r => r.trim()).filter(r => r),
-        includes: newTest.includes.split(',').map(i => i.trim()).filter(i => i)
+        requirements: newTest.requirements ? newTest.requirements.split(',').map(r => r.trim()).filter(r => r) : [],
+        includes: newTest.includes ? newTest.includes.split(',').map(i => i.trim()).filter(i => i) : []
       };
-      setTests([...tests, test]);
-      setNewTest({
-        name: '', category: '', price: '', originalPrice: '', duration: '',
-        description: '', requirements: '', includes: '', reportTime: 'Same day',
-        preparationTime: '', sampleType: '', testCode: ''
-      });
-      setShowAddModal(false);
+      
+      const result = await withErrorHandling(testsApi.create)(testData);
+      
+      if (result.success) {
+        // Reload tests to get the new test with proper ID
+        await loadTests();
+        
+        // Reset form
+        setNewTest({
+          name: '', category: '', price: '', originalPrice: '', duration: '',
+          description: '', requirements: '', includes: '', reportTime: 'Same day',
+          preparationTime: '', sampleType: '', testCode: ''
+        });
+        setShowAddModal(false);
+      } else {
+        setError(result.error || 'Failed to create test');
+      }
+    } catch (err) {
+      setError('Failed to create test');
+      console.error('Error creating test:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const updateTest = () => {
-    if (editingTest && editingTest.name && editingTest.category && editingTest.price && editingTest.duration) {
-      setTests(tests.map(test => 
-        test.id === editingTest.id 
-          ? {
-              ...editingTest,
-              price: parseFloat(editingTest.price),
-              originalPrice: parseFloat(editingTest.originalPrice || editingTest.price),
-              lastUpdated: new Date().toISOString().split('T')[0],
-              requirements: typeof editingTest.requirements === 'string' 
-                ? editingTest.requirements.split(',').map(r => r.trim()).filter(r => r)
-                : editingTest.requirements,
-              includes: typeof editingTest.includes === 'string'
-                ? editingTest.includes.split(',').map(i => i.trim()).filter(i => i)
-                : editingTest.includes
-            }
-          : test
-      ));
-      setShowEditModal(false);
-      setEditingTest(null);
+  // Update test
+  const updateTest = async () => {
+    if (!editingTest || !editingTest.name || !editingTest.category || !editingTest.price || !editingTest.duration) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError(null);
+      
+      const testData = {
+        ...editingTest,
+        price: parseFloat(editingTest.price),
+        originalPrice: parseFloat(editingTest.originalPrice || editingTest.price),
+        requirements: typeof editingTest.requirements === 'string' 
+          ? editingTest.requirements.split(',').map(r => r.trim()).filter(r => r)
+          : (editingTest.requirements || []),
+        includes: typeof editingTest.includes === 'string'
+          ? editingTest.includes.split(',').map(i => i.trim()).filter(i => i)
+          : (editingTest.includes || [])
+      };
+      
+      const testId = editingTest._id || editingTest.id;
+      const result = await withErrorHandling(testsApi.update)(testId, testData);
+      
+      if (result.success) {
+        // Update local state
+        setTests(prevTests => 
+          safeArray(prevTests).map(test => 
+            (test?._id === testId || test?.id === testId) 
+              ? { ...test, ...testData } 
+              : test
+          )
+        );
+        setShowEditModal(false);
+        setEditingTest(null);
+      } else {
+        setError(result.error || 'Failed to update test');
+      }
+    } catch (err) {
+      setError('Failed to update test');
+      console.error('Error updating test:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  // Handle actions
   const handleAction = (test, action) => {
     setSelectedTest(test);
     setActionType(action);
@@ -329,45 +306,88 @@ export default function TestsPage() {
     } else if (action === 'view') {
       setShowModal(true);
     } else if (action === 'edit') {
+      const testId = test._id || test.id;
       setEditingTest({
         ...test,
-        requirements: Array.isArray(test.requirements) ? test.requirements.join(', ') : test.requirements,
-        includes: Array.isArray(test.includes) ? test.includes.join(', ') : test.includes
+        id: testId,
+        _id: testId,
+        requirements: Array.isArray(test.requirements) 
+          ? test.requirements.join(', ') 
+          : (test.requirements || ''),
+        includes: Array.isArray(test.includes) 
+          ? test.includes.join(', ') 
+          : (test.includes || '')
       });
       setShowEditModal(true);
     } else if (action === 'toggle') {
-      toggleTestStatus(test.id);
+      const testId = test._id || test.id;
+      toggleTestStatus(testId);
     }
   };
 
-  const confirmAction = () => {
+  // Confirm action
+  const confirmAction = async () => {
     if (actionType === 'delete' && selectedTest) {
-      deleteTest(selectedTest.id);
+      const testId = selectedTest._id || selectedTest.id;
+      await deleteTest(testId);
     }
     setShowConfirmModal(false);
     setSelectedTest(null);
     setActionType('');
   };
 
+  // Utility functions
   const getPopularityColor = (popularity) => {
-    if (popularity >= 90) return 'text-green-400';
-    if (popularity >= 70) return 'text-yellow-400';
-    if (popularity >= 50) return 'text-orange-400';
+    const pop = popularity || 0;
+    if (pop >= 90) return 'text-green-400';
+    if (pop >= 70) return 'text-yellow-400';
+    if (pop >= 50) return 'text-orange-400';
     return 'text-red-400';
   };
 
-  const exportTests = () => {
-    const dataStr = JSON.stringify(tests, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'kriday-tests.json';
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  const exportTests = async () => {
+    try {
+      const dataStr = JSON.stringify(safeArray(tests), null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = 'kriday-tests.json';
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    } catch (err) {
+      console.error('Export failed:', err);
+      setError('Failed to export tests');
+    }
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-white/60">Loading tests...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <span className="text-red-400">{error}</span>
+          <button 
+            onClick={() => setError(null)}
+            className="ml-auto text-red-400 hover:text-red-300"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -376,8 +396,9 @@ export default function TestsPage() {
         </div>
         <div className="flex gap-3">
           <button 
-            onClick={() => alert('Import functionality')}
+            onClick={() => alert('Import functionality - connect to file upload')}
             className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 border border-white/20 hover:border-white/30"
+            disabled={submitting}
           >
             <Upload className="w-4 h-4" />
             Import
@@ -385,6 +406,7 @@ export default function TestsPage() {
           <button 
             onClick={exportTests}
             className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 border border-white/20 hover:border-white/30"
+            disabled={submitting}
           >
             <Download className="w-4 h-4" />
             Export
@@ -392,6 +414,7 @@ export default function TestsPage() {
           <button 
             onClick={() => setShowAddModal(true)}
             className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
+            disabled={submitting}
           >
             <Plus className="w-4 h-4" />
             Add Test
@@ -401,7 +424,7 @@ export default function TestsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {displayStats.map((stat, index) => (
           <StatCard
             key={index}
             {...stat}
@@ -449,118 +472,132 @@ export default function TestsPage() {
 
       {/* Tests Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredTests.map((test, index) => (
-          <div 
-            key={test.id} 
-            className="bg-white/5 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 animate-fade-in group"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <TestTube className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="text-cyan-400 text-xs font-medium bg-cyan-400/10 px-2 py-1 rounded-full">
-                    {test.category}
+        {filteredTests.map((test, index) => {
+          if (!test) return null;
+          
+          const testId = test._id || test.id;
+          
+          return (
+            <div 
+              key={testId} 
+              className="bg-white/5 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 animate-fade-in group"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <TestTube className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-white/60 text-xs mt-1">#{test.testCode}</div>
+                  <div>
+                    <div className="text-cyan-400 text-xs font-medium bg-cyan-400/10 px-2 py-1 rounded-full">
+                      {test.category || 'Unknown'}
+                    </div>
+                    <div className="text-white/60 text-xs mt-1">#{test.testCode || 'N/A'}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  test.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                }`}>
-                  {test.active ? 'Active' : 'Inactive'}
-                </div>
-              </div>
-            </div>
-
-            {/* Test Info */}
-            <div className="mb-4">
-              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300">
-                {test.name}
-              </h3>
-              <p className="text-white/60 text-sm line-clamp-2 mb-3">{test.description}</p>
-              
-              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-white">₹{test.price}</span>
-                  {test.originalPrice > test.price && (
-                    <span className="text-white/50 line-through text-sm">₹{test.originalPrice}</span>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    test.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {test.active ? 'Active' : 'Inactive'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Test Info */}
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300">
+                  {test.name || 'Unnamed Test'}
+                </h3>
+                <p className="text-white/60 text-sm line-clamp-2 mb-3">{test.description || 'No description available'}</p>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-white">₹{test.price || 0}</span>
+                    {test.originalPrice && test.originalPrice > test.price && (
+                      <span className="text-white/50 line-through text-sm">₹{test.originalPrice}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-white/60 text-sm">
+                    <Clock className="w-4 h-4" />
+                    {test.duration || 'N/A'}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-white/60 mb-3">
+                  <span>Sample: {test.sampleType || 'N/A'}</span>
+                  <span>Report: {test.reportTime || 'N/A'}</span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <div className="text-lg font-bold text-white">{test.bookings || 0}</div>
+                  <div className="text-white/60 text-xs">Bookings</div>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <div className={`text-lg font-bold ${getPopularityColor(test.popularity)}`}>
+                    {test.popularity || 0}%
+                  </div>
+                  <div className="text-white/60 text-xs">Popular</div>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <div className="text-lg font-bold text-white">₹{((test.revenue || 0) / 1000).toFixed(0)}k</div>
+                  <div className="text-white/60 text-xs">Revenue</div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleAction(test, 'view')}
+                  className="flex-1 bg-cyan-500/20 text-cyan-400 py-2 rounded-lg hover:bg-cyan-500/30 transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center justify-center gap-1"
+                  disabled={submitting}
+                >
+                  <Eye className="w-4 h-4" />
+                  View
+                </button>
+                <button 
+                  onClick={() => handleAction(test, 'edit')}
+                  className="flex-1 bg-purple-500/20 text-purple-400 py-2 rounded-lg hover:bg-purple-500/30 transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center justify-center gap-1"
+                  disabled={submitting}
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleAction(test, 'toggle')}
+                  className={`flex-1 py-2 rounded-lg transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center justify-center gap-1 ${
+                    test.active 
+                      ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
+                      : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                  }`}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Power className="w-4 h-4" />
                   )}
-                </div>
-                <div className="flex items-center gap-1 text-white/60 text-sm">
-                  <Clock className="w-4 h-4" />
-                  {test.duration}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-white/60 mb-3">
-                <span>Sample: {test.sampleType}</span>
-                <span>Report: {test.reportTime}</span>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-white/5 rounded-lg p-3 text-center">
-                <div className="text-lg font-bold text-white">{test.bookings}</div>
-                <div className="text-white/60 text-xs">Bookings</div>
-              </div>
-              <div className="bg-white/5 rounded-lg p-3 text-center">
-                <div className={`text-lg font-bold ${getPopularityColor(test.popularity)}`}>
-                  {test.popularity}%
-                </div>
-                <div className="text-white/60 text-xs">Popular</div>
-              </div>
-              <div className="bg-white/5 rounded-lg p-3 text-center">
-                <div className="text-lg font-bold text-white">₹{(test.revenue / 1000).toFixed(0)}k</div>
-                <div className="text-white/60 text-xs">Revenue</div>
+                  {test.active ? 'Disable' : 'Enable'}
+                </button>
+                <button 
+                  onClick={() => handleAction(test, 'delete')}
+                  className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all duration-300 hover:scale-110"
+                  disabled={submitting}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
-
-            {/* Actions */}
-            <div className="flex gap-2">
-              <button 
-                onClick={() => handleAction(test, 'view')}
-                className="flex-1 bg-cyan-500/20 text-cyan-400 py-2 rounded-lg hover:bg-cyan-500/30 transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center justify-center gap-1"
-              >
-                <Eye className="w-4 h-4" />
-                View
-              </button>
-              <button 
-                onClick={() => handleAction(test, 'edit')}
-                className="flex-1 bg-purple-500/20 text-purple-400 py-2 rounded-lg hover:bg-purple-500/30 transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center justify-center gap-1"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-              <button 
-                onClick={() => handleAction(test, 'toggle')}
-                className={`flex-1 py-2 rounded-lg transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center justify-center gap-1 ${
-                  test.active 
-                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
-                    : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                }`}
-              >
-                <Power className="w-4 h-4" />
-                {test.active ? 'Disable' : 'Enable'}
-              </button>
-              <button 
-                onClick={() => handleAction(test, 'delete')}
-                className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all duration-300 hover:scale-110"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Empty State */}
-      {filteredTests.length === 0 && (
+      {filteredTests.length === 0 && !loading && (
         <div className="bg-white/5 backdrop-blur-2xl rounded-2xl p-12 border border-white/10 text-center">
           <TestTube className="w-16 h-16 text-white/50 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-white mb-2">No Tests Found</h3>
@@ -581,29 +618,29 @@ export default function TestsPage() {
               <div className="space-y-4">
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Test Name</div>
-                  <div className="text-white font-medium text-lg">{selectedTest.name}</div>
+                  <div className="text-white font-medium text-lg">{selectedTest.name || 'N/A'}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Test Code</div>
-                  <div className="text-white font-medium">{selectedTest.testCode}</div>
+                  <div className="text-white font-medium">{selectedTest.testCode || 'N/A'}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Category</div>
-                  <div className="text-white font-medium">{selectedTest.category}</div>
+                  <div className="text-white font-medium">{selectedTest.category || 'N/A'}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Price</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-white font-bold text-xl">₹{selectedTest.price}</span>
-                    {selectedTest.originalPrice > selectedTest.price && (
+                    <span className="text-white font-bold text-xl">₹{selectedTest.price || 0}</span>
+                    {selectedTest.originalPrice && selectedTest.originalPrice > selectedTest.price && (
                       <span className="text-white/50 line-through">₹{selectedTest.originalPrice}</span>
                     )}
                   </div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Duration & Sample</div>
-                  <div className="text-white font-medium">{selectedTest.duration}</div>
-                  <div className="text-white/80 text-sm">{selectedTest.sampleType}</div>
+                  <div className="text-white font-medium">{selectedTest.duration || 'N/A'}</div>
+                  <div className="text-white/80 text-sm">{selectedTest.sampleType || 'N/A'}</div>
                 </div>
               </div>
               
@@ -619,56 +656,62 @@ export default function TestsPage() {
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Popularity</div>
                   <div className={`text-white font-bold text-xl ${getPopularityColor(selectedTest.popularity)}`}>
-                    {selectedTest.popularity}%
+                    {selectedTest.popularity || 0}%
                   </div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Total Bookings</div>
-                  <div className="text-white font-bold text-xl">{selectedTest.bookings}</div>
+                  <div className="text-white font-bold text-xl">{selectedTest.bookings || 0}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Revenue Generated</div>
-                  <div className="text-white font-bold text-xl">₹{selectedTest.revenue.toLocaleString()}</div>
+                  <div className="text-white font-bold text-xl">₹{(selectedTest.revenue || 0).toLocaleString()}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="text-white/60 text-sm mb-1">Report Time</div>
-                  <div className="text-white font-medium">{selectedTest.reportTime}</div>
+                  <div className="text-white font-medium">{selectedTest.reportTime || 'N/A'}</div>
                 </div>
               </div>
             </div>
 
             <div className="p-4 bg-white/5 rounded-xl border border-white/10">
               <div className="text-white/60 text-sm mb-2">Description</div>
-              <div className="text-white">{selectedTest.description}</div>
+              <div className="text-white">{selectedTest.description || 'No description available'}</div>
             </div>
 
             <div className="p-4 bg-white/5 rounded-xl border border-white/10">
               <div className="text-white/60 text-sm mb-2">Preparation Instructions</div>
-              <div className="text-white">{selectedTest.preparationTime}</div>
+              <div className="text-white">{selectedTest.preparationTime || 'No special preparation needed'}</div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                 <div className="text-white/60 text-sm mb-2">Requirements</div>
                 <ul className="text-white space-y-1">
-                  {selectedTest.requirements.map((req, index) => (
+                  {safeArray(selectedTest.requirements).map((req, index) => (
                     <li key={index} className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-400" />
                       {req}
                     </li>
                   ))}
+                  {safeArray(selectedTest.requirements).length === 0 && (
+                    <li className="text-white/60 text-sm">No specific requirements</li>
+                  )}
                 </ul>
               </div>
               
               <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                 <div className="text-white/60 text-sm mb-2">Test Includes</div>
                 <ul className="text-white space-y-1">
-                  {selectedTest.includes.map((item, index) => (
+                  {safeArray(selectedTest.includes).map((item, index) => (
                     <li key={index} className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-cyan-400" />
                       {item}
                     </li>
                   ))}
+                  {safeArray(selectedTest.includes).length === 0 && (
+                    <li className="text-white/60 text-sm">No specific inclusions listed</li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -676,7 +719,8 @@ export default function TestsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => {
-                  toggleTestStatus(selectedTest.id);
+                  const testId = selectedTest._id || selectedTest.id;
+                  toggleTestStatus(testId);
                   setShowModal(false);
                 }}
                 className={`flex-1 py-3 rounded-xl font-medium transition-all duration-300 ${
@@ -684,8 +728,13 @@ export default function TestsPage() {
                     ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white' 
                     : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
                 }`}
+                disabled={submitting}
               >
-                {selectedTest.active ? 'Disable Test' : 'Enable Test'}
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                ) : (
+                  selectedTest.active ? 'Disable Test' : 'Enable Test'
+                )}
               </button>
               <button
                 onClick={() => {
@@ -717,13 +766,14 @@ export default function TestsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-white font-medium mb-2">Test Name</label>
+              <label className="block text-white font-medium mb-2">Test Name *</label>
               <input
                 type="text"
                 value={newTest.name}
                 onChange={(e) => setNewTest({...newTest, name: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 placeholder="Enter test name"
+                required
               />
             </div>
             
@@ -739,11 +789,12 @@ export default function TestsPage() {
             </div>
             
             <div>
-              <label className="block text-white font-medium mb-2">Category</label>
+              <label className="block text-white font-medium mb-2">Category *</label>
               <select
                 value={newTest.category}
                 onChange={(e) => setNewTest({...newTest, category: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
+                required
               >
                 <option value="" className="bg-gray-800">Select category</option>
                 {categories.map(category => (
@@ -764,13 +815,16 @@ export default function TestsPage() {
             </div>
             
             <div>
-              <label className="block text-white font-medium mb-2">Price (₹)</label>
+              <label className="block text-white font-medium mb-2">Price (₹) *</label>
               <input
                 type="number"
                 value={newTest.price}
                 onChange={(e) => setNewTest({...newTest, price: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 placeholder="299"
+                min="0"
+                step="0.01"
+                required
               />
             </div>
             
@@ -782,17 +836,20 @@ export default function TestsPage() {
                 onChange={(e) => setNewTest({...newTest, originalPrice: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 placeholder="499"
+                min="0"
+                step="0.01"
               />
             </div>
             
             <div>
-              <label className="block text-white font-medium mb-2">Duration</label>
+              <label className="block text-white font-medium mb-2">Duration *</label>
               <input
                 type="text"
                 value={newTest.duration}
                 onChange={(e) => setNewTest({...newTest, duration: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 placeholder="15 mins"
+                required
               />
             </div>
             
@@ -859,14 +916,21 @@ export default function TestsPage() {
             <button
               onClick={() => setShowAddModal(false)}
               className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-medium transition-all duration-300 border border-white/20"
+              disabled={submitting}
             >
               Cancel
             </button>
             <button
               onClick={addNewTest}
-              className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 shadow-lg"
+              className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
+              disabled={submitting}
             >
-              Add Test
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              {submitting ? 'Adding...' : 'Add Test'}
             </button>
           </div>
         </div>
@@ -883,12 +947,13 @@ export default function TestsPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-white font-medium mb-2">Test Name</label>
+                <label className="block text-white font-medium mb-2">Test Name *</label>
                 <input
                   type="text"
-                  value={editingTest.name}
+                  value={editingTest.name || ''}
                   onChange={(e) => setEditingTest({...editingTest, name: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
+                  required
                 />
               </div>
               
@@ -896,18 +961,19 @@ export default function TestsPage() {
                 <label className="block text-white font-medium mb-2">Test Code</label>
                 <input
                   type="text"
-                  value={editingTest.testCode}
+                  value={editingTest.testCode || ''}
                   onChange={(e) => setEditingTest({...editingTest, testCode: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 />
               </div>
               
               <div>
-                <label className="block text-white font-medium mb-2">Category</label>
+                <label className="block text-white font-medium mb-2">Category *</label>
                 <select
-                  value={editingTest.category}
+                  value={editingTest.category || ''}
                   onChange={(e) => setEditingTest({...editingTest, category: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
+                  required
                 >
                   {categories.map(category => (
                     <option key={category} value={category} className="bg-gray-800">{category}</option>
@@ -919,19 +985,22 @@ export default function TestsPage() {
                 <label className="block text-white font-medium mb-2">Sample Type</label>
                 <input
                   type="text"
-                  value={editingTest.sampleType}
+                  value={editingTest.sampleType || ''}
                   onChange={(e) => setEditingTest({...editingTest, sampleType: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 />
               </div>
               
               <div>
-                <label className="block text-white font-medium mb-2">Price (₹)</label>
+                <label className="block text-white font-medium mb-2">Price (₹) *</label>
                 <input
                   type="number"
-                  value={editingTest.price}
+                  value={editingTest.price || ''}
                   onChange={(e) => setEditingTest({...editingTest, price: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
+                  min="0"
+                  step="0.01"
+                  required
                 />
               </div>
               
@@ -939,26 +1008,29 @@ export default function TestsPage() {
                 <label className="block text-white font-medium mb-2">Original Price (₹)</label>
                 <input
                   type="number"
-                  value={editingTest.originalPrice}
+                  value={editingTest.originalPrice || ''}
                   onChange={(e) => setEditingTest({...editingTest, originalPrice: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
+                  min="0"
+                  step="0.01"
                 />
               </div>
               
               <div>
-                <label className="block text-white font-medium mb-2">Duration</label>
+                <label className="block text-white font-medium mb-2">Duration *</label>
                 <input
                   type="text"
-                  value={editingTest.duration}
+                  value={editingTest.duration || ''}
                   onChange={(e) => setEditingTest({...editingTest, duration: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
+                  required
                 />
               </div>
               
               <div>
                 <label className="block text-white font-medium mb-2">Report Time</label>
                 <select
-                  value={editingTest.reportTime}
+                  value={editingTest.reportTime || 'Same day'}
                   onChange={(e) => setEditingTest({...editingTest, reportTime: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
                 >
@@ -973,7 +1045,7 @@ export default function TestsPage() {
             <div>
               <label className="block text-white font-medium mb-2">Description</label>
               <textarea
-                value={editingTest.description}
+                value={editingTest.description || ''}
                 onChange={(e) => setEditingTest({...editingTest, description: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm resize-none"
                 rows="3"
@@ -984,7 +1056,7 @@ export default function TestsPage() {
               <label className="block text-white font-medium mb-2">Preparation Instructions</label>
               <input
                 type="text"
-                value={editingTest.preparationTime}
+                value={editingTest.preparationTime || ''}
                 onChange={(e) => setEditingTest({...editingTest, preparationTime: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
               />
@@ -994,7 +1066,7 @@ export default function TestsPage() {
               <label className="block text-white font-medium mb-2">Requirements (comma separated)</label>
               <input
                 type="text"
-                value={editingTest.requirements}
+                value={editingTest.requirements || ''}
                 onChange={(e) => setEditingTest({...editingTest, requirements: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
               />
@@ -1004,7 +1076,7 @@ export default function TestsPage() {
               <label className="block text-white font-medium mb-2">Test Includes (comma separated)</label>
               <input
                 type="text"
-                value={editingTest.includes}
+                value={editingTest.includes || ''}
                 onChange={(e) => setEditingTest({...editingTest, includes: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur-sm"
               />
@@ -1014,14 +1086,21 @@ export default function TestsPage() {
               <button
                 onClick={() => setShowEditModal(false)}
                 className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-medium transition-all duration-300 border border-white/20"
+                disabled={submitting}
               >
                 Cancel
               </button>
               <button
                 onClick={updateTest}
-                className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 shadow-lg"
+                className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
+                disabled={submitting}
               >
-                Update Test
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {submitting ? 'Updating...' : 'Update Test'}
               </button>
             </div>
           </div>
