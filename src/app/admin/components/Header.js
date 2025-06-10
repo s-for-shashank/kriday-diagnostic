@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, User, Search, Settings, MessageSquare, ChevronDown } from 'lucide-react';
+import { Bell, User, Search, Settings, MessageSquare, ChevronDown, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+
 
 export default function AdminHeader() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const getPageTitle = () => {
     const pageMap = {
@@ -48,6 +51,24 @@ export default function AdminHeader() {
       case 'completed': return 'bg-green-500/20 text-green-400';
       default: return 'bg-gray-500/20 text-gray-400';
     }
+  };
+
+  const handleLogout = async () => {
+    setShowProfile(false);
+    await logout();
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (user?.name) {
+      return user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return 'AD';
+  };
+
+  // Get user status
+  const getUserStatus = () => {
+    return user ? 'Online' : 'Offline';
   };
 
   return (
@@ -128,31 +149,67 @@ export default function AdminHeader() {
               className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-2 hover:bg-white/20 transition-all duration-300 group"
             >
               <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <User className="w-5 h-5 text-white" />
+                <span className="text-white text-sm font-bold">
+                  {getUserInitials()}
+                </span>
               </div>
               <div className="hidden md:block text-left">
                 <div className="text-white text-sm font-medium group-hover:text-cyan-400 transition-colors duration-300">
-                  Admin User
+                  {user?.name || 'Admin User'}
                 </div>
-                <div className="text-white/50 text-xs">Online</div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className="text-white/50 text-xs">{getUserStatus()}</span>
+                </div>
               </div>
               <ChevronDown className={`w-4 h-4 text-white/50 transition-transform duration-300 ${showProfile ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Profile Dropdown */}
             {showProfile && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-2xl animate-fade-in">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-2xl animate-fade-in">
+                {/* User Info Section */}
+                <div className="p-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {getUserInitials()}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold text-sm">
+                        {user?.name || 'Admin User'}
+                      </div>
+                      <div className="text-white/60 text-xs">
+                        {user?.email || 'admin@kriday.com'}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-white/50 text-xs">
+                          {user?.role?.charAt(0)?.toUpperCase() + user?.role?.slice(1) || 'Administrator'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
                 <div className="p-2">
                   <button className="w-full flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl transition-all duration-300 text-white hover:text-cyan-400 group">
                     <User className="w-4 h-4" />
-                    <span className="text-sm font-medium">Profile</span>
+                    <span className="text-sm font-medium">Profile Settings</span>
                   </button>
                   <button className="w-full flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl transition-all duration-300 text-white hover:text-cyan-400 group">
                     <Settings className="w-4 h-4" />
-                    <span className="text-sm font-medium">Settings</span>
+                    <span className="text-sm font-medium">Account Settings</span>
                   </button>
+                  
                   <div className="border-t border-white/10 mt-2 pt-2">
-                    <button className="w-full flex items-center gap-3 p-3 hover:bg-red-500/10 rounded-xl transition-all duration-300 text-red-400 hover:text-red-300 group">
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-red-500/10 rounded-xl transition-all duration-300 text-red-400 hover:text-red-300 group"
+                    >
+                      <LogOut className="w-4 h-4" />
                       <span className="text-sm font-medium">Sign Out</span>
                     </button>
                   </div>

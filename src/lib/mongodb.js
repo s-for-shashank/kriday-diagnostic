@@ -1,7 +1,18 @@
 import { MongoClient } from 'mongodb'
 
 const uri = process.env.MONGODB_URI
-const options = {}
+
+// Enhanced options to handle TLS issues
+const options = {
+  tls: true,
+  ssl: true,
+  tlsAllowInvalidCertificates: false,
+  tlsAllowInvalidHostnames: false,
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  family: 4, // Use IPv4, skip trying IPv6
+}
 
 let client
 let clientPromise
@@ -23,6 +34,11 @@ if (process.env.NODE_ENV === 'development') {
   client = new MongoClient(uri, options)
   clientPromise = client.connect()
 }
+
+// Add connection error handling
+clientPromise.catch(err => {
+  console.error('MongoDB connection error:', err)
+})
 
 // Export a module-scoped MongoClient promise. By doing this in a
 // separate module, the client can be shared across functions.
