@@ -7,18 +7,18 @@
   "/api/auth/login/route": "/api/auth/login",
   "/api/dashboard/activity/route": "/api/dashboard/activity",
   "/api/dashboard/stats/route": "/api/dashboard/stats",
-  "/api/customers/route": "/api/customers",
-  "/api/bookings/route": "/api/bookings",
   "/api/callbacks/route": "/api/callbacks",
+  "/api/bookings/route": "/api/bookings",
+  "/api/customers/route": "/api/customers",
   "/api/tests/route": "/api/tests",
   "/login/page": "/login",
   "/unauthorized/page": "/unauthorized",
   "/page": "/",
-  "/admin/reports/page": "/admin/reports",
   "/admin/bookings/page": "/admin/bookings",
   "/admin/callbacks/page": "/admin/callbacks",
   "/admin/customers/page": "/admin/customers",
+  "/admin/page": "/admin",
+  "/admin/reports/page": "/admin/reports",
   "/admin/settings/page": "/admin/settings",
-  "/admin/tests/page": "/admin/tests",
-  "/admin/page": "/admin"
+  "/admin/tests/page": "/admin/tests"
 }
