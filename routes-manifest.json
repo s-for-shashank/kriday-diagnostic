@@ -2,15 +2,15 @@
   "version": 3,
   "pages404": true,
   "caseSensitive": false,
-  "basePath": "/kriday-diagnostatic",
+  "basePath": "/kriday-diagnostic",
   "redirects": [
     {
-      "source": "/kriday-diagnostatic/",
-      "destination": "/kriday-diagnostatic",
+      "source": "/kriday-diagnostic/",
+      "destination": "/kriday-diagnostic",
       "basePath": false,
       "internal": true,
       "statusCode": 308,
-      "regex": "^/kriday-diagnostatic/$"
+      "regex": "^/kriday-diagnostic/$"
     },
     {
       "source": "/:path+/",
@@ -116,9 +116,9 @@
   "rewrites": {
     "beforeFiles": [
       {
-        "source": "/kriday-diagnostatic//_next/:path+",
-        "destination": "/kriday-diagnostatic/_next/:path+",
-        "regex": "^/kriday-diagnostatic//_next(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))(?:/)?$"
+        "source": "/kriday-diagnostic//_next/:path+",
+        "destination": "/kriday-diagnostic/_next/:path+",
+        "regex": "^/kriday-diagnostic//_next(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))(?:/)?$"
       }
     ],
     "afterFiles": [],

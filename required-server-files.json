@@ -12,7 +12,7 @@
     },
     "distDir": "build",
     "cleanDistDir": true,
-    "assetPrefix": "/kriday-diagnostatic/",
+    "assetPrefix": "/kriday-diagnostic/",
     "cacheMaxMemorySize": 52428800,
     "configOrigin": "next.config.mjs",
     "useFileSystemPublicRoutes": true,
@@ -46,7 +46,7 @@
         256,
         384
       ],
-      "path": "/kriday-diagnostatic/_next/image",
+      "path": "/kriday-diagnostic/_next/image",
       "loader": "default",
       "loaderFile": "",
       "domains": [],
@@ -69,9 +69,9 @@
       "pagesBufferLength": 5
     },
     "amp": {
-      "canonicalBase": "/kriday-diagnostatic"
+      "canonicalBase": "/kriday-diagnostic"
     },
-    "basePath": "/kriday-diagnostatic",
+    "basePath": "/kriday-diagnostic",
     "sassOptions": {},
     "trailingSlash": false,
     "i18n": null,
