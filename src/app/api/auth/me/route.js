@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import clientPromise from '../../../../lib/mongodb'
 import { ObjectId } from 'mongodb'
-
+export const dynamic = 'force-static'
 export async function GET(request) {
   try {
     const token = request.cookies.get('auth-token')?.value

@@ -1,7 +1,7 @@
 import clientPromise from '@/lib/mongodb'
 import { validateCustomer, generateId, COLLECTIONS } from '@/lib/models'
 import { NextResponse } from 'next/server'
-
+export const dynamic = 'force-static'
 // GET - Fetch all customers
 export async function GET(request) {
   try {

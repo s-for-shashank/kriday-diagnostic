@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import clientPromise from '../../../../lib/mongodb'
-
+export const dynamic = 'force-static'
 export async function POST(request) {
   try {
     const { email, password, name, role = 'user' } = await request.json()

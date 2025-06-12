@@ -1,13 +1,16 @@
 {
   "name": "kriday-diagnostatic",
   "version": "0.1.0",
+  "homepage": "https://shashank-gtet.github.io/kriday-diagnostatic/",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "create-admin": "node src/scripts/createFirstUser.js"
+    "create-admin": "node src/scripts/createFirstUser.js",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -22,6 +25,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "^4"
   }
 }

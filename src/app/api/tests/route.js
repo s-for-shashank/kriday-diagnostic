@@ -3,7 +3,7 @@
 import clientPromise from '@/lib/mongodb'
 import { validateTest, generateId, formatDate, COLLECTIONS } from '@/lib/models'
 import { NextResponse } from 'next/server'
-
+export const dynamic = 'force-static'
 // GET - Fetch all tests
 export async function GET(request) {
   try {

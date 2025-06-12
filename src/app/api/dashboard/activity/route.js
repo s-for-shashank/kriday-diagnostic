@@ -1,7 +1,7 @@
 import clientPromise from '@/lib/mongodb'
 import { COLLECTIONS } from '@/lib/models'
 import { NextResponse } from 'next/server'
-
+export const dynamic = 'force-static'
 // GET - Fetch recent activity for dashboard
 export async function GET(request) {
   try {

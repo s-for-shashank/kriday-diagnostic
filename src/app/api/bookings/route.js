@@ -1,7 +1,7 @@
 import clientPromise from '@/lib/mongodb'
 import { validateBooking, generateId, COLLECTIONS } from '@/lib/models'
 import { NextResponse } from 'next/server'
-
+export const dynamic = 'force-static'
 // GET - Fetch all bookings
 export async function GET(request) {
   try {
