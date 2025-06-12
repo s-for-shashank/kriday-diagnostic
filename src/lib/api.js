@@ -2,7 +2,7 @@
 
 const API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://your-domain.com/api"
+    ? "/api"
     : "/api";
 
 class ApiService {
